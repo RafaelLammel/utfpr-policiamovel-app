@@ -1,6 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, Text, useColorScheme } from 'react-native';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import {SafeAreaView, StatusBar, Text, useColorScheme} from 'react-native';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 const HomePage = () => {
   const isDarkMode = useColorScheme() === 'dark';

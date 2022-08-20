@@ -1,10 +1,8 @@
 import React from 'react';
-import Login from './src/pages/Home';
+import Routes from './src/routes';
 
 const App = () => {
-  return (
-    <Login/>
-  );
+  return <Routes />;
 };
 
 export default App;
