@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AuthContext from '../../contexts/auth';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {styles} from './styles';
 
 const LoginPage = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -23,16 +24,24 @@ const LoginPage = () => {
   const {signIn} = useContext(AuthContext);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[backgroundStyle, styles.container]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <TextInput onChangeText={text => setLogin(text)} placeholder="Login" />
+      <Text style={styles.mainText}>Polícia Móvel</Text>
       <TextInput
+        style={styles.inputBox}
+        onChangeText={text => setLogin(text)}
+        placeholder="Login"
+      />
+      <TextInput
+        style={styles.inputBox}
         onChangeText={text => setPassword(text)}
         placeholder="Senha"
         secureTextEntry={true}
       />
-      <TouchableOpacity onPress={async () => await signIn({login, password})}>
-        <Text>Login</Text>
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={async () => await signIn({login, password})}>
+        <Text style={styles.loginText}>Entrar</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
