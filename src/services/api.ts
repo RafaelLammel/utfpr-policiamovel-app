@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import {LoginRequest} from '../interfaces/requests/LoginRequest';
 import {LoginResponse} from '../interfaces/responses/LoginResponse';
 import {LoginErrorResponse} from '../interfaces/responses/LoginErrorResponse';
@@ -10,24 +10,34 @@ const api = axios.create({
 export async function login(
   loginRequest: LoginRequest,
 ): Promise<LoginResponse | LoginErrorResponse> {
-  const response = await api.post('/api/v1/authentication/login', loginRequest);
+  try {
+    const response = await api.post(
+      '/api/v1/authentication/login',
+      loginRequest,
+    );
 
-  if (response.status === 200) {
     return response.data as LoginResponse;
+  } catch (error) {
+    const e = error as AxiosError;
+
+    if (e.response?.status === 500) {
+      return {
+        errorMsgs: ['Algo deu errado no servidor! Tente novamente mais tarde'],
+      };
+    } else if (e.response?.status === 404) {
+      return {errorMsgs: ['Login ou senha incorretos!']};
+    }
+
+    const loginErrorResponse: LoginErrorResponse = {
+      errorMsgs: [],
+    } as LoginErrorResponse;
+    const errors: any = e.response?.data;
+
+    Object.values(errors.errors).forEach(value => {
+      const errorList = value as string[];
+      errorList.forEach(v => loginErrorResponse.errorMsgs.push(v));
+    });
+
+    return loginErrorResponse;
   }
-
-  if (response.status === 500) {
-    return {errorMsgs: ['Algo deu errado no servidor!']};
-  }
-
-  const loginErrorResponse: LoginErrorResponse = {
-    errorMsgs: [],
-  } as LoginErrorResponse;
-  const errors: any = response.data.errors;
-
-  Object.values(errors).forEach(value => {
-    loginErrorResponse.errorMsgs.concat(value as string[]);
-  });
-
-  return loginErrorResponse;
 }

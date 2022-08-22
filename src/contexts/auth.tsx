@@ -3,12 +3,13 @@ import {login} from '../services/api';
 import {LoginRequest} from '../interfaces/requests/LoginRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LoginResponse} from '../interfaces/responses/LoginResponse';
+import {LoginErrorResponse} from '../interfaces/responses/LoginErrorResponse';
 
 interface AuthData {
   signed: boolean;
   user: LoginResponse | null;
   loading: boolean;
-  signIn(loginRequest: LoginRequest): Promise<void>;
+  signIn(loginRequest: LoginRequest): Promise<null | LoginErrorResponse>;
   signOut(): void;
 }
 
@@ -24,10 +25,10 @@ export const AuthProvider: React.FC<Props> = ({children}) => {
 
   useEffect(() => {
     async function loadStorageData() {
-      const storagedToken = await AsyncStorage.getItem('@auth:token');
+      const storedToken = await AsyncStorage.getItem('@auth:token');
 
-      if (storagedToken) {
-        setUser({accessToken: storagedToken});
+      if (storedToken) {
+        setUser({accessToken: storedToken});
       }
 
       setLoading(false);
@@ -41,15 +42,19 @@ export const AuthProvider: React.FC<Props> = ({children}) => {
 
     const response = await login(loginRequest);
 
-    if ('accessToken' in response) {
-      const userResponse = response as LoginResponse;
-
-      setUser(userResponse);
-
-      await AsyncStorage.setItem('@auth:token', userResponse.accessToken);
+    if (!('accessToken' in response)) {
+      setLoading(false);
+      return response as LoginErrorResponse;
     }
 
+    const userResponse = response as LoginResponse;
+
+    setUser(userResponse);
+
+    await AsyncStorage.setItem('@auth:token', userResponse.accessToken);
+
     setLoading(false);
+    return null;
   }
 
   function signOut() {
