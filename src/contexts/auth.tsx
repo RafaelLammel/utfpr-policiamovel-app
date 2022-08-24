@@ -26,9 +26,10 @@ export const AuthProvider: React.FC<Props> = ({children}) => {
   useEffect(() => {
     async function loadStorageData() {
       const storedToken = await AsyncStorage.getItem('@auth:token');
+      const storedUserId = await AsyncStorage.getItem('@auth:userId');
 
-      if (storedToken) {
-        setUser({accessToken: storedToken});
+      if (storedToken && storedUserId) {
+        setUser({accessToken: storedToken, userId: storedUserId});
       }
 
       setLoading(false);
@@ -52,6 +53,7 @@ export const AuthProvider: React.FC<Props> = ({children}) => {
     setUser(userResponse);
 
     await AsyncStorage.setItem('@auth:token', userResponse.accessToken);
+    await AsyncStorage.setItem('@auth:userId', userResponse.userId);
 
     setLoading(false);
     return null;
