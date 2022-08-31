@@ -1,9 +1,12 @@
 import React from 'react';
-import Login from './src/pages/Home';
+import Routes from './src/routes';
+import {AuthProvider} from './src/contexts/auth';
 
 const App = () => {
   return (
-    <Login/>
+    <AuthProvider>
+      <Routes />
+    </AuthProvider>
   );
 };
 
