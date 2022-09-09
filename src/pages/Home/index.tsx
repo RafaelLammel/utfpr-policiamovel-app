@@ -28,9 +28,10 @@ const HomePage = () => {
   var cont = 0;
   useEffect(() => {
     var granted;
-    async () => {
+    var permissionAsync = async () => {
       granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
     }
+    permissionAsync();
     if(granted === PermissionsAndroid.RESULTS.granted){
       const intervalId = BackgroundTimer.setInterval(async () => {  
           Geolocation.getCurrentPosition(
