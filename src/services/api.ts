@@ -2,10 +2,13 @@ import axios, {AxiosError} from 'axios';
 import {LoginRequest} from '../interfaces/requests/LoginRequest';
 import {LoginResponse} from '../interfaces/responses/LoginResponse';
 import {LoginErrorResponse} from '../interfaces/responses/LoginErrorResponse';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LocationRequest } from '../interfaces/requests/LocationRequest';
 
 const api = axios.create({
   baseURL: 'https://api.tccpm.tk',
 });
+
 
 export async function login(
   loginRequest: LoginRequest,
@@ -39,5 +42,27 @@ export async function login(
     });
 
     return loginErrorResponse;
+  }
+}
+
+
+export async function putLocation(locationRequest: LocationRequest){
+  try{
+    const storedUserId = await AsyncStorage.getItem('@auth:userId');
+    return await api.put(
+      '/api/v1/Location/'+ storedUserId,
+      locationRequest,
+      {
+        headers: {
+          Authorization: 'Bearer ' + await AsyncStorage.getItem('@auth:token')
+        }
+      }
+    );
+  }
+  catch(error){
+    const e = error as AxiosError;
+    if(e.response?.status == 401){
+      return e.response?.status;
+    }
   }
 }
