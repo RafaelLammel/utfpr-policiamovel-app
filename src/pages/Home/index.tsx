@@ -3,7 +3,6 @@ import {
   PermissionsAndroid,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
@@ -11,7 +10,7 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import AuthContext from '../../contexts/auth';
 import Geolocation from 'react-native-geolocation-service';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundService from 'react-native-background-actions';
 import {styles} from './styles';
 
 import { putLocation } from '../../services/api';
@@ -25,15 +24,27 @@ const HomePage = () => {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter
   };
-  var cont = 0;
-  useEffect(() => {
-    var granted;
-    var permissionAsync = async () => {
-      granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-    }
-    permissionAsync();
-    if(granted === PermissionsAndroid.RESULTS.granted){
-      const intervalId = BackgroundTimer.setInterval(async () => {  
+
+  const options = {
+    taskName: 'PoliciaMovelLocation',
+    taskTitle: 'PoliciaMovelApp',
+    taskDesc: 'Sua Localização está sendo enviada',
+    taskIcon: {
+        name: 'ic_launcher',
+        type: 'mipmap',
+    },
+    color: '#ff00ff',
+    parameters: {
+        delay: 5000,
+    },
+  };
+
+  const sleep = (time:any) => new Promise((resolve) => setTimeout(() => resolve(), time));
+
+  const putLocationTask = async (taskDataArguments:any) => {
+    const { delay } = taskDataArguments;
+    await new Promise( async (resolve) => {
+      for (let i = 0; BackgroundService.isRunning(); i++) {
           Geolocation.getCurrentPosition(
             async (position) => {
               const locationRequest: LocationRequest = {
@@ -42,19 +53,35 @@ const HomePage = () => {
               };
               var responseOrError = await putLocation(locationRequest);
               if(responseOrError == 401){
-                BackgroundTimer.clearInterval(intervalId);
+                await BackgroundService.stop();
                 signOut();
               }
               console.log(locationRequest);//DEBUG
-              console.log("contador: " + cont++)
+              console.log("contador: " + i)
             },
             (error) => {
               console.log(error.code, error.message);
             },
             { enableHighAccuracy: true }
           );
-        
-      }, 5000);    
+          await sleep(delay);
+      }
+    });
+  };
+
+  useEffect(() => {
+    var granted;
+    var permissionAsync = async () => {
+      granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
+    }
+    permissionAsync();
+    if(granted === PermissionsAndroid.RESULTS.granted){
+      (async () => {
+        await BackgroundService.start(putLocationTask, options)
+      })();
+    }
+    return () => {
+      (async () => await BackgroundService.stop())();
     }
   }, [])
 
