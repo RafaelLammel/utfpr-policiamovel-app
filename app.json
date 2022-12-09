@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "policiamovel",
+    "slug": "policiamovel",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c0c85019-1689-463a-8f7e-5f59ae9138aa"
+      }
+    }
+  },
+  "android": {
+    "permissions": [
+      "ACCESS_BACKGROUND_LOCATION"
+    ]
+  }
+}
